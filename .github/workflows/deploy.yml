@@ -15,11 +15,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'pnpm'
+          # do not attempt to use pnpm cache here because pnpm is not installed yet on the runner
 
       - name: Setup pnpm
-        run: |
-          npm install -g pnpm@8
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
 
       - name: Install dependencies
         run: pnpm install
