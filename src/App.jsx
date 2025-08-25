@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react'
-
+import TodoList from './components/TodoList'
+import TodoModal from './components/TodoModal'
 
 function App() {
   const STORAGE_KEY = 'todos_v1'
@@ -28,7 +29,7 @@ function App() {
   const addTodo = (e) => {
     if (e && e.preventDefault) e.preventDefault()
     if (input.trim() === '') return
-    setTodos([...todos, { text: input.trim(), done: false }])
+    setTodos([...todos, { text: input.trim(), done: false, user: null }])
     setInput('')
   }
 
@@ -42,6 +43,24 @@ function App() {
 
   const deleteTodo = (idx) => {
     setTodos(todos.filter((_, i) => i !== idx))
+  }
+
+  // Modal state for showing todo details and editing user details
+  const [modalOpen, setModalOpen] = useState(false)
+  const [currentTodoIndex, setCurrentTodoIndex] = useState(null)
+
+  const openModal = (idx) => {
+    setCurrentTodoIndex(idx)
+    setModalOpen(true)
+  }
+
+  const closeModal = () => {
+    setModalOpen(false)
+    setCurrentTodoIndex(null)
+  }
+
+  const saveUserForTodo = (idx, user) => {
+    setTodos(todos.map((t, i) => (i === idx ? { ...t, user } : t)))
   }
 
   return (
@@ -60,20 +79,15 @@ function App() {
         </button>
       </form>
 
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {todos.length === 0 && <li style={{ textAlign: 'center', color: '#666' }}>目前沒有待辦事項</li>}
-        {todos.map((todo, idx) => (
-          <li key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #eee' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input type="checkbox" checked={todo.done} onChange={() => toggleTodo(idx)} />
-              <span style={{ textDecoration: todo.done ? 'line-through' : 'none' }}>{todo.text}</span>
-            </label>
-            <button onClick={() => deleteTodo(idx)} style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer' }}>
-              刪除
-            </button>
-          </li>
-        ))}
-      </ul>
+      <TodoList todos={todos} onToggle={toggleTodo} onDelete={deleteTodo} onShow={openModal} />
+
+      {modalOpen && currentTodoIndex !== null && (
+        <TodoModal
+          todo={todos[currentTodoIndex]}
+          onClose={closeModal}
+          onSaveUser={(user) => saveUserForTodo(currentTodoIndex, user)}
+        />
+      )}
     </div>
   )
 }
